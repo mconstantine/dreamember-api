@@ -1,13 +1,20 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const validator = require('validator')
+const { MongoClient } = require('mongodb')
+const nodemailer = require('nodemailer')
+
+const config = require('./config')
 const createError = require('./misc/createServerError')
-const datePattern = require('./messages/datePattern')
+const getDb = require('./misc/make-getDb')({ MongoClient, config })
+
+const sendEmail = require('./messages/make-sendEmail')({ nodemailer })
 const validateCreateMessage = require('./messages/make-validateCreateMessage')({
-  createError, validator, datePattern
+  createError, validator
 })
-const createMessage = require('./messages/createMessage')
+const createMessage = require('./messages/make-createMessage')({ getDb, sendEmail })
 const messages = require('./messages/make-index')({ validateCreateMessage, createMessage })
+
 const app = express()
 
 app
